@@ -1,0 +1,30 @@
+version: '3'
+services:
+  wordpress:
+    image: wordpress:5.1.1-php7.1-apache
+    depends_on:
+    - mysqldb
+    volumes:
+    - /srv/jmbc_wordpress/wpress:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: mysqldb:3306
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: password
+      WORDPRESS_DB_NAME: wordpress
+    ports:
+    - 8001:80
+
+  mysqldb:
+    image: mariadb:10.4.4
+    volumes:
+    - /srv/jmbc_wordpress/mariadb/data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-u", "root", "--password=rootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

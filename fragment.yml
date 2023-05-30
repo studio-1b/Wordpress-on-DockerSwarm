@@ -1,0 +1,19 @@
+version: '3'
+services:
+
+  wordpress-login:
+    image: jmbc-wordpress-clone
+    depends_on:
+    - mysqldb
+    volumes:
+    - /srv/jmbc_wordpress/wpress:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: mysqldb:3306
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: password
+      WORDPRESS_DB_NAME: wordpress
+    ports:
+    - 8002:80
+
+
+
