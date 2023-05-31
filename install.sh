@@ -167,12 +167,12 @@ echo
 
 # After the images replicate on worker nodes, create image based on the running copies
 # if you don't do this and use the wordpress image from docker to create container, it will try to overwrite the files created from the 1st container and fail
-##echo Creating image for single service to support sessions
-##docker container ls | grep ${SVC_PREFIX}_wordpress | cut -d' ' -f1 | head -n1
-##if [ $? -eq 0 ]; then
-##  CONTAINER_ID=$(docker container ls | grep ${SVC_PREFIX}_wordpress | cut -d' ' -f1 | head -n1)
-##  docker commit $CONTAINER_ID ${SVC_PREFIX}-clone
-##  docker image ls | grep $CONTAINER_ID ${SVC_PREFIX}-clone
+echo Creating image for single service to support sessions
+docker container ls | grep ${SVC_PREFIX}_wordpress | cut -d' ' -f1 | head -n1
+if [ $? -eq 0 ]; then
+  CONTAINER_ID=$(docker container ls | grep ${SVC_PREFIX}_wordpress | cut -d' ' -f1 | head -n1)
+  docker commit $CONTAINER_ID ${SVC_PREFIX}-clone
+  docker image ls | grep $CONTAINER_ID ${SVC_PREFIX}-clone
 
 #  cp docker-compose.yml docker-compose_w_login.yml
 #  cat fragment.yml >> docker-compose_w_login.yml
@@ -183,11 +183,26 @@ echo
 #  docker-compose -f docker-compose_w_login.yml up
 
   # we added a new 
-##  docker stack deploy --compose-file=fragment.yml $SVC_PREFIX
+  docker stack deploy --with-registry-auth --compose-file=fragment.yml $SVC_PREFIX
 
-##  echo please login on port 8002
-##fi
-##echo anyone can visit on port 8001
+  echo please login on port 8002
+fi
+echo anyone can visit on port 8001
+
+
+
+
+
+# changing the wp-config, to allow any hostname
+echo .
+echo changing wp-config.php, to bypass hostname check...
+WP_CONFIG_FILENAME="$WP_FRONTEND/wp-config.php"
+PLACEHOLDER="\/\* That's all, stop editing! Happy publishing. \*\/"
+REPLACEMENT="define( 'WP_HOME',    'http:\/\/' . \$_SERVER['HTTP_HOST'] . '\/' );\ndefine( 'WP_SITEURL', 'http:\/\/' . \$_SERVER['HTTP_HOST'] . '\/' );\n\/* End of Edits *\/"
+echo "s/$PLACEHOLDER/$REPLACEMENT/" \[$WP_CONFIG_FILENAME\]
+sudo sed "s/$PLACEHOLDER/$REPLACEMENT/" $WP_CONFIG_FILENAME | grep --color -E '^define(.*HTTP_HOST.*);$|$'
+sudo sed -i "s/$PLACEHOLDER/$REPLACEMENT/" $WP_CONFIG_FILENAME
+echo .
 
 
 
